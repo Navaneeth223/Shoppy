@@ -1,0 +1,28 @@
+{
+  "name": "nexus-commerce",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "server"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "clean": "turbo run clean",
+    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,md}\"",
+    "seed": "node infrastructure/scripts/seed.js"
+  },
+  "devDependencies": {
+    "turbo": "^2.0.9",
+    "prettier": "^3.3.2",
+    "eslint": "^8.57.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}
