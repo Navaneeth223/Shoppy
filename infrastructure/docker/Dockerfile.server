@@ -3,12 +3,12 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Install dependencies first (layer caching)
-COPY package.json package-lock.json* ./
+# Install dependencies first (better layer caching)
+COPY package*.json ./
 RUN npm ci --only=production && npm cache clean --force
 
 # Copy source
-COPY src/ ./src/
+COPY src ./src
 
 # ─── Stage 2: Production ──────────────────────────────────────────────────────
 FROM node:20-alpine AS production
@@ -21,7 +21,7 @@ WORKDIR /app
 # Copy from builder
 COPY --from=builder --chown=nexus:nodejs /app/node_modules ./node_modules
 COPY --from=builder --chown=nexus:nodejs /app/src ./src
-COPY --chown=nexus:nodejs package.json ./
+COPY --chown=nexus:nodejs package*.json ./
 
 # Create logs directory
 RUN mkdir -p logs && chown nexus:nodejs logs

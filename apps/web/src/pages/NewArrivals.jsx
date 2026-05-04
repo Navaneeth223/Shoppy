@@ -1,40 +1,42 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
 import { Sparkles } from 'lucide-react';
 import SEOHead from '../components/shared/SEOHead/SEOHead';
 import ProductGrid from '../components/product/ProductGrid/ProductGrid';
+import Pagination from '../components/ui/Pagination/Pagination';
 import { productAPI } from '../services/api/productAPI';
 
 export default function NewArrivals() {
   const [products, setProducts] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    setIsLoading(true);
     productAPI.getNewArrivals(24)
-      .then((res) => setProducts(res.data.data || []))
+      .then((res) => {
+        setProducts(res.data.data || []);
+        setTotal(res.data.data?.length || 0);
+      })
       .catch(() => {})
       .finally(() => setIsLoading(false));
-  }, []);
+  }, [page]);
 
   return (
     <>
       <SEOHead
         title="New Arrivals"
-        description="Discover the latest products just added to Nexus Commerce. Fresh drops from top brands."
+        description="Discover the latest products just added to Nexus Commerce. Fresh drops from top brands every day."
       />
-
-      <div className="bg-gradient-to-r from-accent-cyan/10 via-surface to-surface border-b border-border py-12">
-        <div className="max-w-7xl mx-auto px-4 text-center">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col items-center gap-3">
-            <Sparkles size={32} className="text-accent-cyan" />
-            <h1 className="text-5xl font-display font-bold text-text-primary">New Arrivals</h1>
-            <p className="text-text-secondary text-lg">Fresh drops from the world's best brands</p>
-          </motion.div>
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="flex items-center gap-3 mb-8">
+          <Sparkles size={28} className="text-accent-cyan" />
+          <div>
+            <h1 className="text-3xl font-display font-bold text-text-primary">New Arrivals</h1>
+            <p className="text-text-muted text-sm mt-1">Fresh drops added in the last 30 days</p>
+          </div>
         </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 py-12">
-        <ProductGrid products={products} isLoading={isLoading} skeletonCount={12} />
+        <ProductGrid products={products} isLoading={isLoading} />
       </div>
     </>
   );

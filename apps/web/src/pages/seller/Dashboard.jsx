@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   DollarSign, ShoppingBag, Package, Star, TrendingUp,
-  AlertTriangle, Plus, Eye, ArrowUpRight, ArrowDownRight,
+  AlertTriangle, Plus, Eye, ArrowRight, BarChart2,
 } from 'lucide-react';
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid,
@@ -21,12 +21,7 @@ const generateRevenueData = () =>
     orders: Math.floor(Math.random() * 20) + 2,
   }));
 
-const CATEGORY_DATA = [
-  { name: 'Electronics', value: 35, color: '#00E5FF' },
-  { name: 'Fashion', value: 28, color: '#C9A84C' },
-  { name: 'Home', value: 20, color: '#00C896' },
-  { name: 'Other', value: 17, color: '#8B5CF6' },
-];
+const CHART_COLORS = ['#C9A84C', '#00E5FF', '#00C896', '#FF4D6D', '#FFB800'];
 
 function StatCard({ title, value, change, icon: Icon, color, prefix = '', suffix = '' }) {
   const isPositive = change >= 0;
@@ -37,13 +32,17 @@ function StatCard({ title, value, change, icon: Icon, color, prefix = '', suffix
       className="card p-6"
     >
       <div className="flex items-start justify-between mb-4">
-        <div className="w-11 h-11 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${color}15` }}>
+        <div
+          className="w-11 h-11 rounded-xl flex items-center justify-center"
+          style={{ backgroundColor: `${color}15` }}
+        >
           <Icon size={20} style={{ color }} />
         </div>
-        <div className={`flex items-center gap-1 text-xs font-semibold ${isPositive ? 'text-success' : 'text-error'}`}>
-          {isPositive ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
-          {Math.abs(change)}%
-        </div>
+        {change !== undefined && (
+          <span className={`text-xs font-semibold px-2 py-1 rounded-full ${isPositive ? 'bg-success/10 text-success' : 'bg-error/10 text-error'}`}>
+            {isPositive ? '+' : ''}{change.toFixed(1)}%
+          </span>
+        )}
       </div>
       <p className="text-2xl font-display font-bold text-text-primary">
         {prefix}{typeof value === 'number' ? value.toLocaleString() : value}{suffix}
@@ -56,11 +55,12 @@ function StatCard({ title, value, change, icon: Icon, color, prefix = '', suffix
 const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-surface border border-border rounded-lg p-3 shadow-card text-xs">
+    <div className="bg-surface border border-border rounded-xl p-3 shadow-modal text-sm">
       <p className="text-text-muted mb-1">{label}</p>
-      {payload.map((p) => (
-        <p key={p.name} style={{ color: p.color }} className="font-semibold">
-          {p.name === 'revenue' ? `$${p.value.toLocaleString()}` : p.value} {p.name}
+      {payload.map((entry) => (
+        <p key={entry.name} style={{ color: entry.color }} className="font-semibold">
+          {entry.name === 'revenue' ? '$' : ''}{entry.value.toLocaleString()}
+          {entry.name === 'orders' ? ' orders' : ''}
         </p>
       ))}
     </div>
@@ -69,47 +69,29 @@ const CustomTooltip = ({ active, payload, label }) => {
 
 export default function SellerDashboard() {
   const [analytics, setAnalytics] = useState(null);
-  const [revenueData] = useState(generateRevenueData);
+  const [recentOrders, setRecentOrders] = useState([]);
+  const [revenueData] = useState(generateRevenueData());
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    axiosInstance.get('/sellers/me/analytics/overview')
-      .then((res) => setAnalytics(res.data.data))
+    Promise.all([
+      axiosInstance.get('/sellers/me/analytics/overview'),
+      axiosInstance.get('/sellers/me/orders?limit=5'),
+    ])
+      .then(([analyticsRes, ordersRes]) => {
+        setAnalytics(analyticsRes.data.data);
+        setRecentOrders(ordersRes.data.data || []);
+      })
       .catch(() => {})
       .finally(() => setIsLoading(false));
   }, []);
 
-  const stats = [
-    {
-      title: 'Revenue (30 days)',
-      value: analytics?.revenue?.current || 0,
-      change: analytics?.revenue?.change || 0,
-      icon: DollarSign,
-      color: '#C9A84C',
-      prefix: '$',
-    },
-    {
-      title: 'Orders (30 days)',
-      value: analytics?.orders?.current || 0,
-      change: analytics?.orders?.change || 0,
-      icon: ShoppingBag,
-      color: '#00E5FF',
-    },
-    {
-      title: 'Active Products',
-      value: analytics?.products?.total || 0,
-      change: 0,
-      icon: Package,
-      color: '#00C896',
-    },
-    {
-      title: 'Store Rating',
-      value: analytics?.rating?.average?.toFixed(1) || '—',
-      change: 0,
-      icon: Star,
-      color: '#FFB800',
-    },
-  ];
+  const stats = analytics || {
+    revenue: { current: 0, change: 0 },
+    orders: { current: 0, change: 0 },
+    products: { total: 0, outOfStock: 0 },
+    rating: { average: 0, count: 0 },
+  };
 
   return (
     <>
@@ -118,8 +100,8 @@ export default function SellerDashboard() {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-2xl font-display font-bold text-text-primary">Seller Dashboard</h1>
-            <p className="text-text-muted text-sm mt-0.5">Welcome back! Here's what's happening with your store.</p>
+            <h1 className="text-3xl font-display font-bold text-text-primary">Seller Dashboard</h1>
+            <p className="text-text-muted text-sm mt-1">Welcome back! Here's what's happening with your store.</p>
           </div>
           <Link to="/seller-dashboard/products/add" className="btn-primary text-sm">
             <Plus size={16} /> Add Product
@@ -127,10 +109,35 @@ export default function SellerDashboard() {
         </div>
 
         {/* Stats grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          {stats.map((stat) => (
-            <StatCard key={stat.title} {...stat} />
-          ))}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <StatCard
+            title="Revenue (30 days)"
+            value={stats.revenue.current}
+            change={stats.revenue.change}
+            icon={DollarSign}
+            color="#C9A84C"
+            prefix="$"
+          />
+          <StatCard
+            title="Orders (30 days)"
+            value={stats.orders.current}
+            change={stats.orders.change}
+            icon={ShoppingBag}
+            color="#00E5FF"
+          />
+          <StatCard
+            title="Active Products"
+            value={stats.products.total}
+            icon={Package}
+            color="#00C896"
+          />
+          <StatCard
+            title="Store Rating"
+            value={stats.rating.average?.toFixed(1) || '—'}
+            icon={Star}
+            color="#FFB800"
+            suffix={stats.rating.count > 0 ? ` (${stats.rating.count})` : ''}
+          />
         </div>
 
         {/* Charts */}
@@ -141,10 +148,7 @@ export default function SellerDashboard() {
               <h2 className="font-display font-semibold text-text-primary">Revenue Overview</h2>
               <div className="flex gap-2">
                 {['7D', '30D', '90D'].map((period) => (
-                  <button
-                    key={period}
-                    className="px-3 py-1 rounded-md text-xs font-medium bg-surface-2 text-text-secondary hover:text-text-primary transition-colors"
-                  >
+                  <button key={period} className="px-3 py-1 text-xs rounded-full bg-surface-2 text-text-muted hover:text-text-primary transition-colors">
                     {period}
                   </button>
                 ))}
@@ -167,55 +171,86 @@ export default function SellerDashboard() {
             </ResponsiveContainer>
           </div>
 
-          {/* Category breakdown */}
+          {/* Orders chart */}
           <div className="card p-6">
-            <h2 className="font-display font-semibold text-text-primary mb-6">Sales by Category</h2>
-            <ResponsiveContainer width="100%" height={160}>
-              <PieChart>
-                <Pie data={CATEGORY_DATA} cx="50%" cy="50%" innerRadius={50} outerRadius={75} paddingAngle={3} dataKey="value">
-                  {CATEGORY_DATA.map((entry, i) => (
-                    <Cell key={i} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip formatter={(value) => `${value}%`} contentStyle={{ background: '#111113', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px' }} />
-              </PieChart>
+            <h2 className="font-display font-semibold text-text-primary mb-6">Daily Orders</h2>
+            <ResponsiveContainer width="100%" height={220}>
+              <BarChart data={revenueData.slice(-14)}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                <XAxis dataKey="date" tick={{ fill: '#4A4A52', fontSize: 10 }} tickLine={false} axisLine={false} interval={3} />
+                <YAxis tick={{ fill: '#4A4A52', fontSize: 10 }} tickLine={false} axisLine={false} />
+                <Tooltip content={<CustomTooltip />} />
+                <Bar dataKey="orders" fill="#00E5FF" radius={[4, 4, 0, 0]} opacity={0.8} />
+              </BarChart>
             </ResponsiveContainer>
-            <div className="space-y-2 mt-4">
-              {CATEGORY_DATA.map((item) => (
-                <div key={item.name} className="flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.color }} />
-                    <span className="text-text-secondary">{item.name}</span>
-                  </div>
-                  <span className="font-semibold text-text-primary">{item.value}%</span>
-                </div>
-              ))}
-            </div>
           </div>
         </div>
 
-        {/* Quick actions */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {[
-            { label: 'View Products', to: '/seller-dashboard/products', icon: Package, color: '#00E5FF' },
-            { label: 'Manage Orders', to: '/seller-dashboard/orders', icon: ShoppingBag, color: '#C9A84C' },
-            { label: 'Analytics', to: '/seller-dashboard/analytics', icon: TrendingUp, color: '#00C896' },
-            { label: 'Inventory', to: '/seller-dashboard/inventory', icon: AlertTriangle, color: '#FFB800' },
-          ].map((action) => (
-            <Link
-              key={action.to}
-              to={action.to}
-              className="card-hover p-4 flex items-center gap-3 group"
-            >
-              <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${action.color}15` }}>
-                <action.icon size={18} style={{ color: action.color }} />
+        {/* Recent orders + alerts */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Recent orders */}
+          <div className="card p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-display font-semibold text-text-primary">Recent Orders</h2>
+              <Link to="/seller-dashboard/orders" className="text-xs text-accent-cyan hover:text-cyan-300 transition-colors flex items-center gap-1">
+                View All <ArrowRight size={12} />
+              </Link>
+            </div>
+            {recentOrders.length === 0 ? (
+              <div className="text-center py-8 text-text-muted text-sm">No orders yet</div>
+            ) : (
+              <div className="space-y-3">
+                {recentOrders.map((order) => (
+                  <div key={order._id} className="flex items-center justify-between py-2 border-b border-border last:border-0">
+                    <div>
+                      <p className="text-sm font-medium text-text-primary">{order.orderNumber}</p>
+                      <p className="text-xs text-text-muted">{order.items?.length} items</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-semibold text-text-primary">${order.totalAmount?.toFixed(2)}</p>
+                      <span className="text-xs text-text-muted capitalize">{order.orderStatus?.replace(/_/g, ' ')}</span>
+                    </div>
+                  </div>
+                ))}
               </div>
-              <span className="text-sm font-medium text-text-secondary group-hover:text-text-primary transition-colors">
-                {action.label}
-              </span>
-              <ArrowUpRight size={14} className="text-text-muted ml-auto group-hover:text-text-primary transition-colors" />
-            </Link>
-          ))}
+            )}
+          </div>
+
+          {/* Quick actions */}
+          <div className="card p-6">
+            <h2 className="font-display font-semibold text-text-primary mb-4">Quick Actions</h2>
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { label: 'Add Product', icon: Plus, to: '/seller-dashboard/products/add', color: '#C9A84C' },
+                { label: 'View Orders', icon: ShoppingBag, to: '/seller-dashboard/orders', color: '#00E5FF' },
+                { label: 'Analytics', icon: BarChart2, to: '/seller-dashboard/analytics', color: '#00C896' },
+                { label: 'Inventory', icon: Package, to: '/seller-dashboard/inventory', color: '#FFB800' },
+              ].map((action) => (
+                <Link
+                  key={action.label}
+                  to={action.to}
+                  className="flex items-center gap-3 p-4 rounded-xl bg-surface-2 border border-border hover:border-text-muted transition-all group"
+                >
+                  <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${action.color}15` }}>
+                    <action.icon size={18} style={{ color: action.color }} />
+                  </div>
+                  <span className="text-sm font-medium text-text-secondary group-hover:text-text-primary transition-colors">
+                    {action.label}
+                  </span>
+                </Link>
+              ))}
+            </div>
+
+            {stats.products.outOfStock > 0 && (
+              <div className="mt-4 flex items-center gap-3 p-3 rounded-xl bg-warning/10 border border-warning/20">
+                <AlertTriangle size={16} className="text-warning shrink-0" />
+                <p className="text-xs text-warning">
+                  {stats.products.outOfStock} product{stats.products.outOfStock > 1 ? 's are' : ' is'} out of stock.{' '}
+                  <Link to="/seller-dashboard/inventory" className="underline">Update inventory</Link>
+                </p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </>

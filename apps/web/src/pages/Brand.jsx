@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
+import { ExternalLink } from 'lucide-react';
 import SEOHead from '../components/shared/SEOHead/SEOHead';
 import ProductGrid from '../components/product/ProductGrid/ProductGrid';
 import { productAPI } from '../services/api/productAPI';
@@ -26,25 +27,28 @@ export default function Brand() {
 
   return (
     <>
-      <SEOHead title={brand?.name || 'Brand'} description={brand?.description} image={brand?.logo?.url} />
-
-      {brand && (
-        <div className="border-b border-border">
-          <div className="max-w-7xl mx-auto px-4 py-12">
-            <div className="flex items-center gap-6">
-              {brand.logo?.url && (
-                <img src={brand.logo.url} alt={brand.name} className="w-20 h-20 rounded-xl object-contain bg-surface-2 p-2 border border-border" />
+      <SEOHead
+        title={brand?.name || 'Brand'}
+        description={brand?.description || `Shop ${brand?.name} products on Nexus Commerce.`}
+        image={brand?.logo?.url}
+      />
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        {brand && (
+          <div className="flex items-center gap-6 mb-10 p-6 card">
+            {brand.logo?.url && (
+              <img src={brand.logo.url} alt={brand.name} className="w-20 h-20 object-contain rounded-xl bg-surface-2 p-2" />
+            )}
+            <div className="flex-1">
+              <h1 className="text-3xl font-display font-bold text-text-primary">{brand.name}</h1>
+              {brand.description && <p className="text-text-secondary mt-1">{brand.description}</p>}
+              {brand.website && (
+                <a href={brand.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-sm text-accent-cyan hover:underline mt-2">
+                  Visit Website <ExternalLink size={12} />
+                </a>
               )}
-              <div>
-                <h1 className="text-3xl font-display font-bold text-text-primary">{brand.name}</h1>
-                {brand.description && <p className="text-text-secondary mt-1 max-w-xl">{brand.description}</p>}
-              </div>
             </div>
           </div>
-        </div>
-      )}
-
-      <div className="max-w-7xl mx-auto px-4 py-8">
+        )}
         <ProductGrid products={products} isLoading={isLoading} />
       </div>
     </>

@@ -10,16 +10,16 @@ const FAQS = [
     items: [
       { q: 'How long does shipping take?', a: 'Standard shipping takes 5-7 business days. Express shipping takes 2-3 business days. Overnight shipping is available for most locations.' },
       { q: 'Do you offer free shipping?', a: 'Yes! Orders over $75 qualify for free standard shipping. Gold and Platinum loyalty members get free shipping on all orders.' },
-      { q: 'Can I track my order?', a: 'Absolutely. Once your order ships, you\'ll receive a tracking number via email. You can also track your order in your account under "My Orders".' },
-      { q: 'Can I change or cancel my order?', a: 'Orders can be cancelled within 1 hour of placement if they haven\'t been processed yet. Contact support immediately if you need to make changes.' },
+      { q: 'Can I track my order?', a: 'Absolutely. Once your order ships, you\'ll receive a tracking number via email. You can also track your order from your account dashboard.' },
+      { q: 'Can I change or cancel my order?', a: 'Orders can be cancelled within 1 hour of placement. After that, please contact our support team. Changes to orders are not possible once confirmed.' },
     ],
   },
   {
     category: 'Returns & Refunds',
     items: [
-      { q: 'What is your return policy?', a: 'We accept returns within 30 days of delivery. Items must be in original condition with all tags attached and original packaging.' },
+      { q: 'What is your return policy?', a: 'We accept returns within 30 days of delivery. Items must be in original condition with all tags attached. Some categories (digital goods, perishables) are non-returnable.' },
       { q: 'How do I initiate a return?', a: 'Go to My Orders, select the order, and click "Request Return". You\'ll receive a prepaid return label within 24 hours.' },
-      { q: 'When will I receive my refund?', a: 'Refunds are processed within 3-5 business days after we receive the returned item. It may take an additional 5-7 days to appear on your statement.' },
+      { q: 'When will I receive my refund?', a: 'Refunds are processed within 5-7 business days after we receive the returned item. The amount will be credited to your original payment method.' },
     ],
   },
   {
@@ -31,11 +31,11 @@ const FAQS = [
     ],
   },
   {
-    category: 'Sellers',
+    category: 'Selling on Nexus',
     items: [
-      { q: 'How do I become a seller?', a: 'Visit our "Become a Seller" page and submit an application. Our team reviews applications within 2-3 business days.' },
-      { q: 'What are the seller fees?', a: 'We charge a 10% commission on each sale. There are no listing fees, monthly fees, or setup costs.' },
-      { q: 'When do sellers get paid?', a: 'Sellers receive payouts on a weekly, bi-weekly, or monthly schedule (your choice). Minimum payout amount is $50.' },
+      { q: 'How do I become a seller?', a: 'Click "Become a Seller" and fill out the application form. Our team reviews applications within 2-3 business days.' },
+      { q: 'What commission does Nexus charge?', a: 'Our standard commission is 10% of the sale price. Volume sellers may qualify for reduced rates.' },
+      { q: 'When do I get paid?', a: 'Payouts are processed on a monthly schedule by default. You can request weekly or bi-weekly payouts from your seller dashboard.' },
     ],
   },
 ];
@@ -76,29 +76,25 @@ function FaqItem({ question, answer }) {
 export default function Faq() {
   return (
     <>
-      <SEOHead title="FAQ" description="Frequently asked questions about Nexus Commerce — orders, shipping, returns, and more." />
+      <SEOHead title="FAQ" description="Frequently asked questions about Nexus Commerce — orders, shipping, returns, and selling." />
       <div className="max-w-3xl mx-auto px-4 py-16">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+        <div className="text-center mb-12">
           <h1 className="text-4xl font-display font-bold text-text-primary mb-3">Frequently Asked Questions</h1>
-          <p className="text-text-secondary mb-12">Can't find what you're looking for? <a href="/contact" className="text-accent-cyan hover:underline">Contact us</a>.</p>
+          <p className="text-text-secondary">Can't find what you're looking for? <a href="/contact" className="text-accent-cyan hover:underline">Contact us</a>.</p>
+        </div>
 
-          <div className="space-y-8">
-            {FAQS.map((section) => (
-              <div key={section.category}>
-                <h2 className="text-lg font-display font-semibold text-text-primary mb-4 pb-2 border-b border-border">
-                  {section.category}
-                </h2>
-                <div className="card divide-y divide-border overflow-hidden">
-                  {section.items.map((item) => (
-                    <div key={item.q} className="px-5">
-                      <FaqItem question={item.q} answer={item.a} />
-                    </div>
-                  ))}
-                </div>
+        <div className="space-y-8">
+          {FAQS.map((section) => (
+            <div key={section.category}>
+              <h2 className="text-lg font-display font-semibold text-accent-gold mb-4">{section.category}</h2>
+              <div className="card p-2">
+                {section.items.map((item) => (
+                  <FaqItem key={item.q} question={item.q} answer={item.a} />
+                ))}
               </div>
-            ))}
-          </div>
-        </motion.div>
+            </div>
+          ))}
+        </div>
       </div>
     </>
   );

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   Users, ShoppingBag, DollarSign, Package, Star,
-  AlertTriangle, TrendingUp, ArrowUpRight,
+  AlertTriangle, TrendingUp, ArrowRight, CheckCircle,
 } from 'lucide-react';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -17,75 +17,117 @@ const generateData = () =>
     date: format(subDays(new Date(), 29 - i), 'MMM d'),
     revenue: Math.floor(Math.random() * 50000) + 10000,
     users: Math.floor(Math.random() * 200) + 50,
+    orders: Math.floor(Math.random() * 300) + 100,
   }));
 
-function KPICard({ title, value, change, icon: Icon, color, prefix = '' }) {
+function StatCard({ title, value, change, icon: Icon, color, prefix = '' }) {
   const isPositive = change >= 0;
   return (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="card p-5">
-      <div className="flex items-center justify-between mb-3">
-        <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${color}15` }}>
-          <Icon size={18} style={{ color }} />
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="card p-6">
+      <div className="flex items-start justify-between mb-4">
+        <div className="w-11 h-11 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${color}15` }}>
+          <Icon size={20} style={{ color }} />
         </div>
         {change !== undefined && (
-          <span className={`text-xs font-semibold ${isPositive ? 'text-success' : 'text-error'}`}>
-            {isPositive ? '+' : ''}{change}%
+          <span className={`text-xs font-semibold px-2 py-1 rounded-full ${isPositive ? 'bg-success/10 text-success' : 'bg-error/10 text-error'}`}>
+            {isPositive ? '+' : ''}{change.toFixed(1)}%
           </span>
         )}
       </div>
       <p className="text-2xl font-display font-bold text-text-primary">
         {prefix}{typeof value === 'number' ? value.toLocaleString() : value}
       </p>
-      <p className="text-xs text-text-muted mt-1">{title}</p>
+      <p className="text-sm text-text-muted mt-1">{title}</p>
     </motion.div>
   );
 }
 
+const CustomTooltip = ({ active, payload, label }) => {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="bg-surface border border-border rounded-xl p-3 shadow-modal text-sm">
+      <p className="text-text-muted mb-1">{label}</p>
+      {payload.map((entry) => (
+        <p key={entry.name} style={{ color: entry.color }} className="font-semibold">
+          {entry.name === 'revenue' ? '$' : ''}{entry.value.toLocaleString()}
+        </p>
+      ))}
+    </div>
+  );
+};
+
 export default function AdminDashboard() {
-  const [data, setData] = useState(null);
-  const [chartData] = useState(generateData);
+  const [dashboard, setDashboard] = useState(null);
+  const [chartData] = useState(generateData());
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     axiosInstance.get('/admin/dashboard')
-      .then((res) => setData(res.data.data))
+      .then((res) => setDashboard(res.data.data))
       .catch(() => {})
       .finally(() => setIsLoading(false));
   }, []);
 
-  const kpis = [
-    { title: 'Total Revenue', value: data?.revenue?.total || 0, change: 12, icon: DollarSign, color: '#C9A84C', prefix: '$' },
-    { title: 'Total Users', value: data?.users?.total || 0, change: 8, icon: Users, color: '#00E5FF' },
-    { title: 'Total Orders', value: data?.orders?.total || 0, change: 15, icon: ShoppingBag, color: '#00C896' },
-    { title: 'Active Products', value: data?.products?.total || 0, change: 5, icon: Package, color: '#8B5CF6' },
-    { title: 'Pending Reviews', value: data?.pendingReviews || 0, icon: Star, color: '#FFB800' },
-    { title: 'Pending Sellers', value: data?.pendingSellers || 0, icon: AlertTriangle, color: '#FF4D6D' },
-  ];
-
-  const QUICK_LINKS = [
-    { label: 'Manage Users', to: '/admin/users', icon: Users },
-    { label: 'Seller Approvals', to: '/admin/sellers?status=pending', icon: AlertTriangle },
-    { label: 'Review Moderation', to: '/admin/reviews?status=pending', icon: Star },
-    { label: 'Revenue Analytics', to: '/admin/analytics', icon: TrendingUp },
-  ];
+  const d = dashboard || {
+    users: { total: 0, new: 0 },
+    orders: { total: 0, recent: 0 },
+    revenue: { total: 0, recent: 0 },
+    products: { total: 0 },
+    pendingReviews: 0,
+    pendingSellers: 0,
+  };
 
   return (
     <>
       <SEOHead title="Admin Dashboard" noIndex />
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-2xl font-display font-bold text-text-primary">Admin Dashboard</h1>
-          <p className="text-text-muted text-sm mt-0.5">Platform overview and management</p>
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-3xl font-display font-bold text-text-primary">Admin Dashboard</h1>
+            <p className="text-text-muted text-sm mt-1">Platform overview and management</p>
+          </div>
         </div>
 
-        {/* KPIs */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
-          {kpis.map((kpi) => <KPICard key={kpi.title} {...kpi} />)}
+        {/* Alerts */}
+        {(d.pendingSellers > 0 || d.pendingReviews > 0) && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            {d.pendingSellers > 0 && (
+              <div className="flex items-center gap-3 p-4 rounded-xl bg-warning/10 border border-warning/20">
+                <AlertTriangle size={18} className="text-warning shrink-0" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-warning">{d.pendingSellers} seller applications pending</p>
+                </div>
+                <Link to="/admin/sellers?status=pending" className="text-xs text-warning underline">Review</Link>
+              </div>
+            )}
+            {d.pendingReviews > 0 && (
+              <div className="flex items-center gap-3 p-4 rounded-xl bg-accent-cyan/10 border border-accent-cyan/20">
+                <Star size={18} className="text-accent-cyan shrink-0" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-accent-cyan">{d.pendingReviews} reviews awaiting moderation</p>
+                </div>
+                <Link to="/admin/reviews?status=pending" className="text-xs text-accent-cyan underline">Moderate</Link>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Stats */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <StatCard title="Total Users" value={d.users.total} change={d.users.new > 0 ? 5.2 : 0} icon={Users} color="#00E5FF" />
+          <StatCard title="Total Orders" value={d.orders.total} change={d.orders.recent > 0 ? 8.1 : 0} icon={ShoppingBag} color="#C9A84C" />
+          <StatCard title="Total Revenue" value={d.revenue.total} icon={DollarSign} color="#00C896" prefix="$" />
+          <StatCard title="Active Products" value={d.products.total} icon={Package} color="#FFB800" />
         </div>
 
         {/* Revenue chart */}
-        <div className="card p-6 mb-8">
-          <h2 className="font-display font-semibold text-text-primary mb-6">Platform Revenue (30 Days)</h2>
+        <div className="card p-6 mb-6">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="font-display font-semibold text-text-primary">Platform Revenue</h2>
+            <Link to="/admin/analytics/revenue" className="text-xs text-accent-cyan hover:text-cyan-300 flex items-center gap-1">
+              Full Report <ArrowRight size={12} />
+            </Link>
+          </div>
           <ResponsiveContainer width="100%" height={250}>
             <AreaChart data={chartData}>
               <defs>
@@ -97,7 +139,7 @@ export default function AdminDashboard() {
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
               <XAxis dataKey="date" tick={{ fill: '#4A4A52', fontSize: 11 }} tickLine={false} axisLine={false} interval={6} />
               <YAxis tick={{ fill: '#4A4A52', fontSize: 11 }} tickLine={false} axisLine={false} tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} />
-              <Tooltip contentStyle={{ background: '#111113', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', fontSize: '12px' }} />
+              <Tooltip content={<CustomTooltip />} />
               <Area type="monotone" dataKey="revenue" stroke="#C9A84C" strokeWidth={2} fill="url(#adminRevGrad)" />
             </AreaChart>
           </ResponsiveContainer>
@@ -105,11 +147,23 @@ export default function AdminDashboard() {
 
         {/* Quick links */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {QUICK_LINKS.map((link) => (
-            <Link key={link.to} to={link.to} className="card-hover p-4 flex items-center gap-3 group">
-              <link.icon size={18} className="text-accent-gold" />
-              <span className="text-sm font-medium text-text-secondary group-hover:text-text-primary transition-colors">{link.label}</span>
-              <ArrowUpRight size={14} className="text-text-muted ml-auto" />
+          {[
+            { label: 'Manage Users', to: '/admin/users', icon: Users, color: '#00E5FF' },
+            { label: 'Seller Approvals', to: '/admin/sellers', icon: CheckCircle, color: '#00C896' },
+            { label: 'All Orders', to: '/admin/orders', icon: ShoppingBag, color: '#C9A84C' },
+            { label: 'Analytics', to: '/admin/analytics', icon: TrendingUp, color: '#FFB800' },
+          ].map((item) => (
+            <Link
+              key={item.label}
+              to={item.to}
+              className="flex items-center gap-3 p-4 card-hover group"
+            >
+              <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${item.color}15` }}>
+                <item.icon size={18} style={{ color: item.color }} />
+              </div>
+              <span className="text-sm font-medium text-text-secondary group-hover:text-text-primary transition-colors">
+                {item.label}
+              </span>
             </Link>
           ))}
         </div>
