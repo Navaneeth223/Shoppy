@@ -24,7 +24,6 @@ const userSchema = new mongoose.Schema(
     email: {
       type: String,
       required: [true, 'Email is required'],
-      unique: true,
       lowercase: true,
       trim: true,
       match: [/^\S+@\S+\.\S+$/, 'Please provide a valid email address'],
@@ -71,8 +70,8 @@ const userSchema = new mongoose.Schema(
     isActive: { type: Boolean, default: true },
     isBanned: { type: Boolean, default: false },
     banReason: { type: String, default: null },
-    googleId: { type: String, default: null, sparse: true },
-    facebookId: { type: String, default: null, sparse: true },
+    googleId: { type: String, default: null },
+    facebookId: { type: String, default: null },
     twoFactorEnabled: { type: Boolean, default: false },
     twoFactorSecret: { type: String, select: false },
     loginAttempts: { type: Number, default: 0, select: false },
@@ -108,7 +107,7 @@ const userSchema = new mongoose.Schema(
       enum: ['bronze', 'silver', 'gold', 'platinum'],
       default: 'bronze',
     },
-    referralCode: { type: String, unique: true, sparse: true },
+    referralCode: { type: String },
     referredBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
   },
   {

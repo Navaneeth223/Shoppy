@@ -8,13 +8,11 @@ const brandSchema = new mongoose.Schema(
       type: String,
       required: [true, 'Brand name is required'],
       trim: true,
-      unique: true,
       maxlength: [100, 'Brand name cannot exceed 100 characters'],
     },
     slug: {
       type: String,
       required: true,
-      unique: true,
       lowercase: true,
       trim: true,
     },

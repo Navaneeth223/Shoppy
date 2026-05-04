@@ -6,7 +6,7 @@ import {
   ShoppingCart, Heart, User, Search, Menu, X, ChevronDown,
   Package, LogOut, Settings, LayoutDashboard, Store,
 } from 'lucide-react';
-import { selectCartItemCount, toggleCartDrawer } from '../../../store/slices/cartSlice';
+import { selectCartItemCount, openCartDrawer } from '../../../store/slices/cartSlice';
 import { selectWishlistCount } from '../../../store/slices/wishlistSlice';
 import { selectCurrentUser, selectIsAuthenticated, logoutUser } from '../../../store/slices/authSlice';
 import { openAuthModal, openSearch, closeMobileNav, openMobileNav, selectMobileNavOpen } from '../../../store/slices/uiSlice';
@@ -194,7 +194,7 @@ export default function Navbar() {
 
               {/* Cart */}
               <button
-                onClick={() => dispatch(toggleCartDrawer())}
+                onClick={() => dispatch(openCartDrawer())}
                 className="relative p-2 rounded-md text-text-secondary hover:text-text-primary hover:bg-surface-2 transition-colors touch-target"
                 aria-label={`Cart${cartCount > 0 ? `, ${cartCount} items` : ''}`}
               >

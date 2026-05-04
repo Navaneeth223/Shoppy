@@ -192,6 +192,11 @@ const cartSlice = createSlice({
 
 export const { openCart, closeCart, toggleCart, clearCart, syncCart } = cartSlice.actions;
 
+// Aliases for consistent naming across the app
+export const openCartDrawer = openCart;
+export const closeCartDrawer = closeCart;
+export const toggleCartDrawer = toggleCart;
+
 // Selectors
 export const selectCartItems = (state) => state.cart.items;
 export const selectCartItemCount = (state) => state.cart.itemCount;
@@ -200,6 +205,7 @@ export const selectCartTotal = (state) => state.cart.total;
 export const selectCartDiscount = (state) => state.cart.discount;
 export const selectCartCoupon = (state) => state.cart.coupon;
 export const selectIsCartOpen = (state) => state.cart.isCartOpen;
+export const selectCartDrawerOpen = (state) => state.cart.isCartOpen;
 export const selectCartLoading = (state) => state.cart.isLoading;
 
 export default cartSlice.reducer;

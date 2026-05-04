@@ -1,366 +1,366 @@
-<div align="center">
+# Nexus Commerce
 
-# ⚡ NEXUS COMMERCE
-### The God-Tier Full-Stack MERN E-Commerce Platform
+**Production-grade MERN e-commerce platform** — MongoDB · Express · React · Node.js · Redis · Cloudinary · Stripe
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-gold.svg)](LICENSE)
-[![Node.js](https://img.shields.io/badge/Node.js-20.x-339933?logo=node.js)](https://nodejs.org)
-[![React](https://img.shields.io/badge/React-18.3-61DAFB?logo=react)](https://react.dev)
-[![MongoDB](https://img.shields.io/badge/MongoDB-7.0-47A248?logo=mongodb)](https://mongodb.com)
-[![Redis](https://img.shields.io/badge/Redis-7.2-DC382D?logo=redis)](https://redis.io)
-[![Stripe](https://img.shields.io/badge/Stripe-Payments-635BFF?logo=stripe)](https://stripe.com)
-[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker)](https://docker.com)
-
-**Production-grade · Multi-seller · Multi-currency · Real-time · Revenue-ready**
-
-[Live Demo](https://nexuscommerce.dev) · [API Docs](https://docs.nexuscommerce.dev) · [Report Bug](issues) · [Request Feature](issues)
-
-</div>
-
----
-
-## 📋 Table of Contents
-
-1. [Overview](#overview)
-2. [Architecture](#architecture)
-3. [Tech Stack](#tech-stack)
-4. [Features](#features)
-5. [Prerequisites](#prerequisites)
-6. [Getting Started](#getting-started)
-7. [Environment Variables](#environment-variables)
-8. [Project Structure](#project-structure)
-9. [API Documentation](#api-documentation)
-10. [Frontend Architecture](#frontend-architecture)
-11. [Authentication & Security](#authentication--security)
-12. [Payment Integration](#payment-integration)
-13. [Seller Dashboard](#seller-dashboard)
-14. [Admin Panel](#admin-panel)
-15. [Search & Filtering](#search--filtering)
-16. [Real-time Features](#real-time-features)
-17. [Performance](#performance)
-18. [Deployment](#deployment)
-19. [Testing](#testing)
-20. [Contributing](#contributing)
-21. [License](#license)
+[![CI](https://github.com/your-org/nexus-commerce/actions/workflows/ci.yml/badge.svg)](https://github.com/your-org/nexus-commerce/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ---
 
 ## Overview
 
-Nexus Commerce is a production-ready, multi-vendor e-commerce platform built with the MERN stack. It is architected to power a real business — handling thousands of concurrent users, multi-seller storefronts, secure Stripe payments, advanced product search, real-time notifications, and a comprehensive analytics dashboard — right out of the box.
+Nexus Commerce is a full-featured, production-ready marketplace platform with:
 
-This is not a tutorial project. Every feature is fully implemented, every API is secured, every UI component is pixel-perfect, and the entire system is containerized and deployment-ready on day one.
+- **Customer storefront** — React 18 + Vite, dark luxury aesthetic, full PWA support
+- **Seller dashboard** — Analytics, inventory, order management, payouts
+- **Admin panel** — Platform management, user moderation, content CMS
+- **REST API** — Express.js, JWT auth, Redis caching, Stripe payments, Socket.IO real-time
 
-### What Makes This Different
+---
 
-| Feature | Nexus Commerce | Typical MERN Tutorial |
-|---|---|---|
-| Authentication | JWT + Refresh rotation + 2FA + OAuth | JWT only |
-| Search | Faceted + full-text + autocomplete + Redis | Basic regex search |
-| Payments | Stripe + saved cards + Apple/Google Pay | Placeholder |
-| Sellers | Multi-vendor + Stripe Connect payouts | Single vendor |
-| Real-time | Socket.IO notifications + order tracking | None |
-| Caching | Redis multi-layer strategy | None |
-| Security | 20+ hardened security layers | Basic helmet |
-| Animations | Framer Motion cinematic design system | None |
-| Testing | Jest + RTL + Playwright E2E | None |
-| DevOps | Docker + CI/CD + Nginx + multi-env | None |
+## Project Structure
+
+```
+nexus-commerce/
+├── apps/
+│   ├── web/          # Customer storefront (React 18 + Vite)
+│   ├── seller/       # Seller dashboard (React 18 + Vite)
+│   └── admin/        # Admin panel (React 18 + Vite)
+├── server/           # Node.js + Express API
+├── packages/
+│   ├── shared/       # Shared utilities
+│   └── ui/           # Shared component library
+├── infrastructure/
+│   ├── docker/       # Dockerfiles
+│   ├── nginx/        # Nginx config
+│   └── scripts/      # Seed script, deploy scripts
+└── .github/
+    └── workflows/    # CI/CD pipelines
+```
+
+---
+
+## Quick Start
+
+### Prerequisites
+
+- Node.js 20+
+- MongoDB 7.0+
+- Redis 7.2+
+- npm 9+
+
+### 1. Clone and install
+
+```bash
+git clone https://github.com/your-org/nexus-commerce.git
+cd nexus-commerce
+
+# Install server dependencies
+cd server && npm install && cd ..
+
+# Install web app dependencies
+cd apps/web && npm install && cd ../..
+```
+
+### 2. Configure environment
+
+```bash
+cp server/.env.example server/.env
+# Edit server/.env with your credentials
+```
+
+**Required variables:**
+```env
+MONGODB_URI=mongodb://localhost:27017/nexus_commerce
+JWT_ACCESS_SECRET=<strong-random-secret>
+JWT_REFRESH_SECRET=<different-strong-random-secret>
+```
+
+**Optional but recommended:**
+```env
+STRIPE_SECRET_KEY=sk_test_...
+CLOUDINARY_CLOUD_NAME=...
+SENDGRID_API_KEY=SG....
+```
+
+### 3. Start services (Docker)
+
+```bash
+# Start MongoDB and Redis
+docker compose -f infrastructure/docker-compose.yml up mongodb redis -d
+```
+
+### 4. Seed the database
+
+```bash
+node infrastructure/scripts/seed.js
+```
+
+This creates:
+- 1 superadmin: `superadmin@nexuscommerce.com` / `Admin@123!`
+- 10 verified sellers
+- 50 customers
+- 200 products across 8 categories
+- Sample orders, coupons, flash deals, banners
+
+### 5. Start development servers
+
+```bash
+# Terminal 1 — API server
+cd server && npm run dev
+
+# Terminal 2 — Web storefront
+cd apps/web && npm run dev
+```
+
+- **Storefront:** http://localhost:5173
+- **API:** http://localhost:5000
+- **API Health:** http://localhost:5000/api/health
 
 ---
 
 ## Architecture
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                        NEXUS COMMERCE                           │
-├────────────────┬────────────────┬───────────────────────────────┤
-│  apps/web      │  apps/seller   │  apps/admin                   │
-│  React 18      │  React 18      │  React 18                     │
-│  Storefront    │  Seller Dash   │  Admin Panel                  │
-│  :5173         │  :5174         │  :5175                        │
-└───────┬────────┴───────┬────────┴──────────┬────────────────────┘
-        │                │                   │
-        └────────────────┼───────────────────┘
-                         │ REST API + WebSocket
-                         ▼
-        ┌────────────────────────────────────┐
-        │         server/ (Express.js)       │
-        │         Node.js 20 · Port 5000     │
-        │                                    │
-        │  ┌──────────┐  ┌───────────────┐  │
-        │  │  Routes  │  │  Middleware   │  │
-        │  │  v1 API  │  │  Auth/Sec/Log │  │
-        │  └──────────┘  └───────────────┘  │
-        │  ┌──────────┐  ┌───────────────┐  │
-        │  │Controllers│  │   Services    │  │
-        │  │  (20+)   │  │  (10+ logic)  │  │
-        │  └──────────┘  └───────────────┘  │
-        │  ┌──────────┐  ┌───────────────┐  │
-        │  │  Models  │  │  Bull Queues  │  │
-        │  │  (20+)   │  │  (Email/Jobs) │  │
-        │  └──────────┘  └───────────────┘  │
-        └───────┬────────────────────────────┘
-                │
-     ┌──────────┼──────────────────┐
-     │          │                  │
-     ▼          ▼                  ▼
-┌─────────┐ ┌────────┐    ┌──────────────┐
-│ MongoDB │ │ Redis  │    │  Cloudinary  │
-│ Atlas   │ │ Cloud  │    │  (Images)    │
-│ (Data)  │ │(Cache) │    │  + Stripe    │
-└─────────┘ └────────┘    └──────────────┘
-```
-
-### Monorepo Structure (Turborepo)
-
-The project uses Turborepo for monorepo management, enabling shared packages, parallel builds, and intelligent caching across all three frontend applications and the backend.
-
----
-
-## Tech Stack
-
 ### Backend
-| Technology | Version | Purpose |
-|---|---|---|
-| Node.js | 20 LTS | Runtime |
-| Express.js | 4.19 | HTTP framework |
-| MongoDB | 7.0 | Primary database |
-| Mongoose | 8.4 | ODM |
-| Redis | 7.2 | Cache + sessions + queues |
-| Socket.IO | 4.7 | Real-time communications |
-| Bull | 4.13 | Background job queues |
-| Stripe | 16.x | Payment processing |
-| Passport.js | 0.7 | OAuth2 (Google, Facebook) |
-| Cloudinary | 2.x | Media storage & CDN |
-| Nodemailer | 6.9 | Email sending |
-| SendGrid | 8.x | Email delivery |
-| Winston | 3.13 | Structured logging |
-| Helmet | 7.x | Security headers |
-| JWT | 9.x | Authentication tokens |
-| Bcrypt | 2.4 | Password hashing |
-| Speakeasy | 2.x | TOTP 2FA |
-| Sharp | 0.33 | Image processing |
 
-### Frontend (Storefront)
-| Technology | Version | Purpose |
-|---|---|---|
-| React | 18.3 | UI library |
-| Vite | 5.x | Build tool |
-| Redux Toolkit | 2.2 | State management |
-| RTK Query | 2.x | API data fetching |
-| React Router | 6.24 | Client-side routing |
-| Framer Motion | 11.x | Animations |
-| TailwindCSS | 3.4 | Utility-first CSS |
-| React Hook Form | 7.x | Form management |
-| Zod | 3.x | Schema validation |
-| Stripe.js | 4.x | Payment UI |
-| Socket.IO Client | 4.7 | Real-time |
-| Recharts | 2.12 | Data visualization |
-| i18next | 23.x | Internationalization |
+| Layer | Technology |
+|-------|-----------|
+| Runtime | Node.js 20 |
+| Framework | Express.js 4.19 |
+| Database | MongoDB 7 + Mongoose 8 |
+| Cache | Redis 7 + ioredis |
+| Auth | JWT (access 15m + refresh 7d) + Passport.js |
+| Payments | Stripe (PaymentIntents + Connect) |
+| Storage | Cloudinary (images + videos) |
+| Email | SendGrid + Nodemailer |
+| Real-time | Socket.IO 4 |
+| Jobs | node-cron |
+| Logging | Winston |
 
-### Infrastructure
-| Technology | Purpose |
-|---|---|
-| Docker + Compose | Containerization |
-| Nginx | Reverse proxy + static serving |
-| GitHub Actions | CI/CD pipelines |
-| Turborepo | Monorepo build system |
+### Frontend
+
+| Layer | Technology |
+|-------|-----------|
+| Framework | React 18.3 + Vite 5 |
+| State | Redux Toolkit 2 + RTK Query |
+| Routing | React Router v6 |
+| Styling | Tailwind CSS 3.4 |
+| Animation | Framer Motion 11 |
+| Forms | React Hook Form 7 + Zod |
+| Charts | Recharts |
+| PWA | Vite PWA Plugin (Workbox) |
 
 ---
 
-## Features
+## API Reference
 
-### 🛍️ Customer Storefront
-- **Cinematic Homepage**: animated hero carousel, flash deals countdown, trending products, brand showcase, personalized recommendations, promotional banners
-- **Advanced Product Discovery**: full-text search, 10+ simultaneous filters (price range, category, brand, color, size, rating, availability), smart faceted search with live counts, "Did you mean?" suggestions, URL-shareable filter state
-- **Product Detail**: multi-image gallery with zoom, video support, variant selector (color swatches + size pills), quantity control, sticky add-to-cart bar, Q&A section, rich review system with media
-- **Smart Cart**: persistent across sessions, real-time inventory validation, coupon codes, shipping estimate, free-shipping progress bar, cross-sell suggestions
-- **Smooth Checkout**: 4-step flow (contact → shipping → payment → confirm), guest checkout, saved addresses, multiple payment methods, Apple/Google Pay, order confirmation with confetti
-- **User Profile**: order history + tracking, wishlist with price alerts, address book, saved payment methods, loyalty points, referral program, notification preferences, 2FA security
+Base URL: `http://localhost:5000/api/v1`
 
-### 🏪 Seller Features
-- **Store Setup**: custom storefront URL, store branding, policies, shipping settings, holidays
-- **Product Management**: rich product editor with TipTap WYSIWYG, variant builder (define dimensions + combinations), bulk CSV import/export, drag-and-drop image ordering
-- **Order Fulfillment**: per-item status workflow, batch shipping, label generation, buyer communication
-- **Analytics Dashboard**: revenue charts, order metrics, top products, customer insights, conversion funnel, exportable reports
-- **Finance**: earnings summary, payout requests (Stripe Connect), commission breakdown, tax documents
-- **Promotions**: coupon creator, flash deal scheduler, featured product boosting
+### Authentication
 
-### 👑 Admin Panel
-- **Platform Dashboard**: live KPIs, revenue charts, user acquisition, product performance
-- **User Management**: ban/unban, role assignment, login history, audit logs
-- **Seller Moderation**: application review, verification workflow, suspend/reinstate
-- **Content Management**: banner CMS, hero slide editor, category/attribute manager
-- **Financial Control**: platform revenue, commission settings, payout management
-- **Order Oversight**: all platform orders, refund processing, dispute handling
+```
+POST /auth/register          Register new user
+POST /auth/login             Login with email/password
+POST /auth/logout            Logout (clears refresh token cookie)
+POST /auth/refresh-token     Rotate refresh token
+POST /auth/forgot-password   Send password reset email
+POST /auth/reset-password/:token  Reset password
+POST /auth/verify-email/:token    Verify email address
+GET  /auth/google            Google OAuth2
+GET  /auth/facebook          Facebook OAuth2
+POST /auth/2fa/setup         Setup 2FA (returns QR code)
+POST /auth/2fa/verify        Enable 2FA
+POST /auth/2fa/validate      Validate 2FA during login
+```
 
-### 🔒 Security Features
-- JWT access tokens (15min) + rotating refresh tokens (7 days, httpOnly cookies)
-- Refresh token family tracking (theft detection)
-- TOTP two-factor authentication (QR code setup)
-- Google + Facebook OAuth2
-- Bcrypt password hashing (cost factor 12)
-- 20+ security middleware layers (Helmet, CORS, rate limiting, XSS, NoSQL injection, HPP)
-- IP-based login anomaly detection
-- Email verification + secure password reset
-- Stripe webhook signature verification
-- Device fingerprinting for trusted devices
+### Products
 
-### ⚡ Performance Features
-- Redis multi-layer caching (products, categories, search, sessions)
-- Cursor-based pagination for large datasets
-- Virtual scrolling for long product lists
-- Code splitting per route
-- Image lazy loading + WebP conversion + responsive srcset
-- Debounced search with 50ms autocomplete target
-- Service Worker + PWA support
-- Lighthouse score targets: Performance >90, Accessibility >95, SEO >95
+```
+GET  /products               List products (filtering, pagination, sorting)
+GET  /products/featured      Featured products
+GET  /products/trending      Trending products
+GET  /products/new-arrivals  New arrivals (last 30 days)
+GET  /products/flash-deals   Active flash deals
+GET  /products/:slug         Single product detail
+POST /products               Create product (seller auth)
+PUT  /products/:id           Update product
+DELETE /products/:id         Soft delete product
+POST /products/:id/images    Upload product images
+GET  /products/:id/reviews   Product reviews
+POST /products/:id/reviews   Submit review (verified purchase)
+GET  /products/:id/related   Related products
+```
+
+### Cart
+
+```
+GET    /cart                 Get cart (auth or session-based)
+POST   /cart/items           Add item
+PUT    /cart/items/:id       Update quantity
+DELETE /cart/items/:id       Remove item
+DELETE /cart                 Clear cart
+POST   /cart/merge           Merge guest cart on login
+POST   /cart/apply-coupon    Apply coupon code
+DELETE /cart/coupon          Remove coupon
+```
+
+### Orders
+
+```
+POST /orders                 Create order + payment intent
+GET  /orders/:id             Get order details
+GET  /orders/track/:number   Public order tracking
+```
+
+### Payments
+
+```
+POST /payments/create-payment-intent   Create Stripe PaymentIntent
+POST /payments/save-payment-method     Save card for future use
+GET  /payments/payment-methods         List saved cards
+POST /payments/refund/:orderId         Process refund
+POST /payments/webhook                 Stripe webhook handler
+```
+
+### Search
+
+```
+GET /search                  Full-text search with facets
+GET /search/autocomplete     Typeahead suggestions
+GET /search/popular          Popular search terms
+```
+
+### Users (authenticated)
+
+```
+GET    /users/me             Get profile
+PUT    /users/me             Update profile
+PUT    /users/me/password    Change password
+PUT    /users/me/avatar      Upload avatar
+GET    /users/me/orders      Order history
+GET    /users/me/addresses   Saved addresses
+POST   /users/me/addresses   Add address
+GET    /users/me/wishlist    Wishlist
+POST   /users/me/wishlist/:productId  Add to wishlist
+GET    /users/me/notifications  Notifications
+GET    /users/me/loyalty     Loyalty points info
+```
+
+### Sellers
+
+```
+POST /sellers/apply          Apply to become seller
+GET  /sellers/me             Own seller profile
+PUT  /sellers/me             Update store profile
+GET  /sellers/me/products    Own products
+GET  /sellers/me/orders      Orders for own products
+GET  /sellers/me/analytics/overview  Revenue & order stats
+GET  /sellers/:slug          Public store page
+GET  /sellers/:slug/products Store products
+```
+
+### Admin (admin/superadmin only)
+
+```
+GET /admin/dashboard         Platform KPIs
+GET /admin/users             All users
+PUT /admin/users/:id/ban     Ban/unban user
+GET /admin/sellers           All sellers
+PUT /admin/sellers/:id/approve  Approve/reject seller
+GET /admin/products          All products
+GET /admin/orders            All orders
+GET /admin/reviews           Reviews for moderation
+GET /admin/categories        Category tree
+POST /admin/categories       Create category
+GET /admin/banners           Promotional banners
+GET /admin/analytics/revenue Revenue analytics
+```
 
 ---
 
-## Prerequisites
+## Security Features
 
-Ensure you have installed:
-
-```bash
-Node.js >= 20.0.0
-npm >= 10.0.0
-MongoDB >= 7.0 (or MongoDB Atlas account)
-Redis >= 7.2 (or Redis Cloud account)
-Docker >= 24.0 (optional, for containerized setup)
-```
-
-External accounts needed:
-- [Stripe](https://stripe.com) — payment processing
-- [Cloudinary](https://cloudinary.com) — image/video CDN
-- [SendGrid](https://sendgrid.com) — transactional email
-- [MongoDB Atlas](https://cloud.mongodb.com) — production database (optional)
-- Google OAuth credentials (optional)
-- Facebook OAuth credentials (optional)
+- **Helmet.js** — Comprehensive security headers + CSP
+- **JWT rotation** — Short-lived access tokens (15m) + rotating refresh tokens (7d)
+- **Token family tracking** — Detects refresh token theft, invalidates entire family
+- **Rate limiting** — Per-route limits (auth: 5/15min, general: 100/15min)
+- **MongoDB sanitization** — Prevents NoSQL injection
+- **XSS protection** — Input sanitization
+- **HPP protection** — HTTP parameter pollution prevention
+- **bcrypt** — Password hashing with cost factor 12
+- **2FA** — TOTP via speakeasy + QR code setup
+- **Stripe Radar** — Fraud prevention on payments
+- **Webhook verification** — Stripe signature validation
 
 ---
 
-## Getting Started
+## Deployment
 
-### Option A — Docker (Recommended, Zero Config)
-
-```bash
-# Clone the repository
-git clone https://github.com/yourusername/nexus-commerce.git
-cd nexus-commerce
-
-# Copy environment files
-cp server/.env.example server/.env
-# Edit server/.env with your Stripe, Cloudinary, SendGrid keys
-
-# Start all services (MongoDB, Redis, API server, web apps)
-docker compose up --build
-
-# In another terminal, seed the database
-docker compose exec server npm run seed
-
-# Access the applications:
-# Storefront:       http://localhost:5173
-# Seller Dashboard: http://localhost:5174
-# Admin Panel:      http://localhost:5175
-# API:              http://localhost:5000
-```
-
-### Option B — Manual Setup
+### Docker (recommended)
 
 ```bash
-# 1. Clone
-git clone https://github.com/yourusername/nexus-commerce.git
-cd nexus-commerce
+# Development
+docker compose -f infrastructure/docker-compose.yml up -d
 
-# 2. Install all dependencies (Turborepo handles all workspaces)
-npm install
-
-# 3. Set up environment variables
-cp server/.env.example server/.env
-# Fill in all required values in server/.env
-
-cp apps/web/.env.example apps/web/.env.local
-# VITE_API_URL=http://localhost:5000/api/v1
-# VITE_STRIPE_PUBLISHABLE_KEY=pk_test_...
-# VITE_SOCKET_URL=http://localhost:5000
-
-# 4. Start MongoDB and Redis (if running locally)
-# macOS: brew services start mongodb-community redis
-# Ubuntu: sudo systemctl start mongod redis-server
-
-# 5. Seed the database with demo data
-cd server && npm run seed && cd ..
-
-# 6. Start all apps in development mode
-npm run dev
-# This starts: server (:5000), web (:5173), seller (:5174), admin (:5175)
+# Production
+docker compose -f infrastructure/docker-compose.prod.yml up -d
 ```
 
-### Default Login Credentials (After Seeding)
+### Manual (DigitalOcean / Railway)
+
+1. **MongoDB Atlas** — Create cluster, get connection string
+2. **Redis Cloud** — Create instance, get connection URL
+3. **Cloudinary** — Create account, get API credentials
+4. **Stripe** — Get API keys, configure webhook endpoint
+5. **SendGrid** — Verify sender domain, get API key
+
+```bash
+# Set production environment variables
+export NODE_ENV=production
+export MONGODB_URI=mongodb+srv://...
+export REDIS_URL=redis://...
+# ... (see server/.env.example for full list)
+
+# Build and start
+cd apps/web && npm run build
+cd server && npm start
+```
+
+### Environment Variables
+
+See [`server/.env.example`](server/.env.example) for the complete list of required and optional environment variables.
+
+---
+
+## Testing
+
+```bash
+# Server unit + integration tests
+cd server && npm test
+
+# Server tests with coverage
+cd server && npm run test:coverage
+
+# Web component tests
+cd apps/web && npm test
+```
+
+---
+
+## Default Credentials (after seeding)
 
 | Role | Email | Password |
-|---|---|---|
-| Super Admin | admin@nexuscommerce.com | Admin@123! |
-| Seller | seller@example.com | Seller@123! |
-| Customer | customer@example.com | Customer@123! |
+|------|-------|----------|
+| Super Admin | superadmin@nexuscommerce.com | Admin@123! |
+| Admin | admin1@nexuscommerce.com | Admin@123! |
+| Seller | techub@seller.com | Seller@123! |
+| Customer | alice.smith0@example.com | Customer@123! |
 
 ---
 
-## Environment Variables
+## License
 
-### server/.env (Required)
-
-```bash
-# ─── Application ──────────────────────────────────────────────────
-NODE_ENV=development               # development | production | test
-PORT=5000
-API_VERSION=v1
-FRONTEND_URL=http://localhost:5173
-SELLER_DASHBOARD_URL=http://localhost:5174
-ADMIN_DASHBOARD_URL=http://localhost:5175
-CORS_ORIGINS=http://localhost:5173,http://localhost:5174,http://localhost:5175
-
-# ─── Database ─────────────────────────────────────────────────────
-MONGODB_URI=mongodb://localhost:27017/nexus_commerce
-# For production: mongodb+srv://user:pass@cluster.mongodb.net/nexus_commerce
-
-# ─── Redis ────────────────────────────────────────────────────────
-REDIS_URL=redis://localhost:6379
-REDIS_PASSWORD=                    # Leave empty for local, set for production
-
-# ─── JWT Security ─────────────────────────────────────────────────
-# Generate with: node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
-JWT_ACCESS_SECRET=<min-256-bit-random-string>
-JWT_REFRESH_SECRET=<different-min-256-bit-random-string>
-JWT_ACCESS_EXPIRE=15m
-JWT_REFRESH_EXPIRE=7d
-
-# ─── Cloudinary ───────────────────────────────────────────────────
-CLOUDINARY_CLOUD_NAME=your_cloud_name
-CLOUDINARY_API_KEY=your_api_key
-CLOUDINARY_API_SECRET=your_api_secret
-
-# ─── Stripe ───────────────────────────────────────────────────────
-STRIPE_SECRET_KEY=sk_test_...
-STRIPE_PUBLISHABLE_KEY=pk_test_...
-STRIPE_WEBHOOK_SECRET=whsec_...    # From Stripe Dashboard > Webhooks
-STRIPE_CONNECT_CLIENT_ID=ca_...    # For multi-vendor payouts
-
-# ─── Email (SendGrid) ─────────────────────────────────────────────
-SENDGRID_API_KEY=SG.xxxxxxx
-EMAIL_FROM=noreply@yourdomain.com
-EMAIL_FROM_NAME=Nexus Commerce
-
-# ─── OAuth (Optional) ─────────────────────────────────────────────
-GOOGLE_CLIENT_ID=
-GOOGLE_CLIENT_SECRET=
-GOOGLE_CALLBACK_URL=http://localhost:5000/api/v1/auth/google/callback
-
-FACEBOOK_APP_ID=
-FACEBOOK_APP_SECRET=
-FACEBOOK_CALLBACK_URL=http://localhost:5000/api/v1/auth/facebook/callback
-
+MIT © Nexus Commerce
 # ─── Business Logic ───────────────────────────────────────────────
 DEFAULT_COMMISSION_RATE=0.10       # 10% platform commission on sales
 MINIMUM_PAYOUT_AMOUNT=50           # Minimum $50 before payout allowed

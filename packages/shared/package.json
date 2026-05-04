@@ -1,0 +1,13 @@
+{
+  "name": "@nexus/shared",
+  "version": "1.0.0",
+  "description": "Shared utilities, constants, and validators for Nexus Commerce",
+  "main": "src/index.js",
+  "scripts": {
+    "build": "echo 'No build step required'",
+    "lint": "eslint src --ext .js"
+  },
+  "devDependencies": {
+    "eslint": "^8.57.0"
+  }
+}

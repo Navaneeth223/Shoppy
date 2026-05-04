@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+
+# Disallow private/account pages
+Disallow: /profile/
+Disallow: /checkout/
+Disallow: /cart
+Disallow: /admin/
+Disallow: /seller-dashboard/
+Disallow: /login
+Disallow: /register
+
+# Sitemap
+Sitemap: https://nexuscommerce.com/sitemap.xml

@@ -31,7 +31,6 @@ const cartSchema = new mongoose.Schema(
     sessionId: {
       type: String,
       default: null,
-      sparse: true,
     },
     items: [cartItemSchema],
     coupon: {

@@ -7,7 +7,6 @@ const couponSchema = new mongoose.Schema(
     code: {
       type: String,
       required: [true, 'Coupon code is required'],
-      unique: true,
       uppercase: true,
       trim: true,
       maxlength: [50, 'Coupon code cannot exceed 50 characters'],

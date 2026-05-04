@@ -1,0 +1,22 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-bg: #0A0A0B;
+  --color-surface: #111113;
+  --color-surface-2: #1A1A1E;
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-accent-gold: #C9A84C;
+  --color-accent-cyan: #00E5FF;
+  --color-text-primary: #F2F2F3;
+  --color-text-secondary: #8A8A95;
+  --color-text-muted: #4A4A52;
+}
+
+body {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  background-color: var(--color-bg);
+  color: var(--color-text-primary);
+  -webkit-font-smoothing: antialiased;
+}
