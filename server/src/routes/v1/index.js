@@ -17,5 +17,10 @@ router.use('/search', require('./search.routes'));
 router.use('/upload', require('./upload.routes'));
 router.use('/notifications', require('./notification.routes'));
 router.use('/analytics', require('./analytics.routes'));
+router.use('/addresses', require('./address.routes'));
+router.use('/coupons', require('./coupon.routes'));
+router.use('/flash-deals', require('./flashdeal.routes'));
+router.use('/reviews', require('./review.routes'));
+router.use('/wishlist', require('./wishlist.routes'));
 
 module.exports = router;
